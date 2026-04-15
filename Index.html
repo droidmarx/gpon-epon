@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bairros Elias Fausto - GPON × EPON</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+
+    :root{
+      --c1:#0ea5e9;--c2:#38bdf8;--c3:#0284c7;--c4:#6366f1;
+      --gpon:#22c55e;--gpon-bg:#f0fdf4;--gpon-border:#86efac;--gpon-text:#15803d;
+      --epon:#f59e0b;--epon-bg:#fffbeb;--epon-border:#fcd34d;--epon-text:#b45309;
+      --crit:#ef4444;--crit-bg:#fef2f2;--crit-border:#fca5a5;--crit-text:#b91c1c;
+      --bg:#f0f9ff;--surface:#ffffff;--surface2:#f8fafc;--surface3:#f1f5f9;
+      --txt:#0f172a;--txt2:#475569;--txt3:#94a3b8;
+      --border:#e2e8f0;--border2:#cbd5e1;
+      --radius:14px;
+      --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 20px rgba(14,165,233,.08);
+      --shadow-md:0 4px 12px rgba(0,0,0,.08),0 8px 32px rgba(14,165,233,.10);
+    }
+
+    [data-theme="dark"]{
+      --bg:#050d1a;--surface:#0a1628;--surface2:#0f1f35;--surface3:#162540;
+      --txt:#f0f8ff;--txt2:#7fb3d3;--txt3:#3d6a8a;
+      --border:#0f2540;--border2:#1a3550;
+      --shadow:0 1px 3px rgba(0,0,0,.5),0 4px 20px rgba(14,165,233,.12);
+      --shadow-md:0 4px 12px rgba(0,0,0,.4),0 8px 32px rgba(14,165,233,.15);
+      --gpon-bg:#052e16;--gpon-border:#166534;--gpon-text:#4ade80;
+      --epon-bg:#2d1a04;--epon-border:#92400e;--epon-text:#fbbf24;
+      --crit-bg:#2d0a0a;--crit-border:#991b1b;--crit-text:#f87171;
+    }
+
+    body{
+      background:var(--bg);
+      color:var(--txt);
+      font-family:'DM Sans',sans-serif;
+      min-height:100vh;
+      transition:background .3s,color .3s;
+    }
+
+    /* HEADER */
+    .hdr{
+      background:var(--surface);
+      border-bottom:1px solid var(--border);
+      padding:18px 16px 14px;
+      text-align:center;
+      position:sticky;top:0;z-index:99;
+      box-shadow:var(--shadow);
+    }
+    .hdr-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:linear-gradient(135deg,#0ea5e9 0%,#6366f1 100%);
+      color:#fff;padding:3px 12px;border-radius:20px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:10px;font-weight:600;letter-spacing:1px;
+      margin-bottom:8px;
+    }
+    .hdr-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#7efff5;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+
+    .hdr h1{
+      font-family:'Syne',sans-serif;
+      font-size:20px;font-weight:800;
+      color:var(--txt);line-height:1.2;
+      letter-spacing:-.3px;
+    }
+    .hdr p{font-size:12px;color:var(--txt2);margin-top:4px;font-family:'JetBrains Mono',monospace}
+
+    /* STATS */
+    .stats{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+      padding:12px 16px;
+      background:var(--surface);
+      border-bottom:1px solid var(--border);
+    }
+    .stat{
+      background:var(--surface2);
+      border:1px solid var(--border);
+      border-radius:10px;padding:8px 4px;text-align:center;
+      transition:transform .15s;
+    }
+    .stat:hover{transform:translateY(-1px)}
+    .stat-n{font-size:22px;font-weight:700;font-family:'Syne',sans-serif;line-height:1}
+    .stat-n.c-blue{color:var(--c1)}
+    .stat-n.c-green{color:var(--gpon)}
+    .stat-n.c-amber{color:var(--epon)}
+    .stat-n.c-red{color:var(--crit)}
+    .stat-l{font-size:9px;color:var(--txt3);margin-top:3px;letter-spacing:.8px;font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+
+    /* CONTROLS */
+    .ctrl{
+      padding:12px 16px;
+      background:var(--surface);
+      border-bottom:1px solid var(--border);
+      display:flex;flex-direction:column;gap:10px;
+      position:sticky;top:117px;z-index:98;
+    }
+    .srch{position:relative}
+    .srch-ic{
+      position:absolute;left:12px;top:50%;transform:translateY(-50%);
+      color:var(--txt3);font-size:13px;pointer-events:none;
+      font-family:'JetBrains Mono',monospace;
+    }
+    .srch input{
+      width:100%;padding:10px 12px 10px 34px;
+      border:1.5px solid var(--border);
+      border-radius:10px;
+      background:var(--surface2);
+      color:var(--txt);font-size:14px;
+      font-family:'DM Sans',sans-serif;
+      outline:none;transition:.2s;
+    }
+    .srch input:focus{border-color:var(--c1);background:var(--surface);box-shadow:0 0 0 3px rgba(14,165,233,.12)}
+    .srch input::placeholder{color:var(--txt3)}
+
+    .fbrow{display:flex;gap:6px}
+    .fb{
+      flex:1;padding:8px 4px;
+      border:1.5px solid var(--border);
+      border-radius:8px;
+      background:var(--surface2);
+      color:var(--txt2);
+      font-size:11px;font-weight:600;
+      font-family:'DM Sans',sans-serif;
+      cursor:pointer;transition:.2s;
+      display:flex;align-items:center;justify-content:center;gap:4px;
+    }
+    .fb:hover{border-color:var(--c1);color:var(--c1)}
+    .fb.on-all{background:var(--c1);border-color:var(--c1);color:#fff}
+    .fb.on-gpon{background:var(--gpon);border-color:var(--gpon);color:#fff}
+    .fb.on-epon{background:var(--epon);border-color:var(--epon);color:#fff}
+    .fb.on-crit{background:var(--crit);border-color:var(--crit);color:#fff}
+    .fb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+    /* MAIN GRID */
+    .main{
+      padding:14px 16px 24px;
+      display:flex;flex-direction:column;gap:14px;
+      max-width:900px;margin:0 auto;
+    }
+
+    /* CARD */
+    .card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      transition:box-shadow .2s;
+    }
+    .card:hover{box-shadow:var(--shadow-md)}
+
+    .chdr{
+      padding:14px 16px;
+      display:flex;align-items:center;gap:12px;
+    }
+    .chdr-gpon{background:linear-gradient(135deg,#14532d 0%,#166534 50%,#15803d 100%)}
+    .chdr-epon{background:linear-gradient(135deg,#78350f 0%,#92400e 50%,#b45309 100%)}
+
+    .chdr-ico{
+      width:34px;height:34px;border-radius:8px;
+      background:rgba(255,255,255,.15);
+      display:flex;align-items:center;justify-content:center;
+      font-size:16px;
+    }
+    .chdr-info{flex:1}
+    .chdr-title{
+      color:#fff;
+      font-family:'Syne',sans-serif;
+      font-size:16px;font-weight:700;
+    }
+    .chdr-sub{color:rgba(255,255,255,.65);font-size:10px;margin-top:1px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
+    .chdr-cnt{
+      background:rgba(255,255,255,.2);
+      color:#fff;border-radius:20px;
+      padding:3px 11px;
+      font-size:12px;font-weight:700;
+      font-family:'JetBrains Mono',monospace;
+    }
+
+    /* ITEMS */
+    .item{
+      padding:11px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      gap:12px;
+      transition:background .15s;
+      animation:fadeIn .2s ease both;
+    }
+    @keyframes fadeIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:translateX(0)}}
+    .item:last-child{border-bottom:none}
+    .item:hover{background:var(--surface2)}
+    .item.crit{background:var(--crit-bg)}
+    .item.crit:hover{background:var(--crit-bg);filter:brightness(.97)}
+    .item.crit .item-name{color:var(--crit-text)}
+
+    .idot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .dg{background:var(--gpon)}
+    .de{background:var(--epon)}
+    .dc{background:var(--crit)}
+
+    .iinfo{flex:1;min-width:0}
+    .item-name{font-size:13px;font-weight:600;color:var(--txt);line-height:1.3}
+    .item-sub{font-size:11px;color:var(--txt2);margin-top:2px;font-family:'JetBrains Mono',monospace}
+
+    .badge{
+      padding:3px 9px;border-radius:20px;
+      font-size:10px;font-weight:700;flex-shrink:0;
+      font-family:'JetBrains Mono',monospace;
+      letter-spacing:.3px;
+    }
+    .bg{background:var(--gpon-bg);color:var(--gpon-text);border:1px solid var(--gpon-border)}
+    .be{background:var(--epon-bg);color:var(--epon-text);border:1px solid var(--epon-border)}
+    .bc{background:var(--crit-bg);color:var(--crit-text);border:1px solid var(--crit-border)}
+
+    .btn-maps {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      background: var(--c1);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all .2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-maps:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(14,165,233,.3);
+    }
+    .btn-maps svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .empty{
+      padding:32px;text-align:center;
+      color:var(--txt3);font-size:13px;
+      font-family:'JetBrains Mono',monospace;
+    }
+    .empty::before{content:'[ ';}.empty::after{content:' ]'}
+
+    /* FOOTER */
+    footer{
+      text-align:center;padding:20px 16px;
+      color:var(--txt3);font-size:11px;
+      border-top:1px solid var(--border);
+      background:var(--surface);
+      font-family:'JetBrains Mono',monospace;
+      letter-spacing:.3px;
+    }
+    footer strong{color:var(--c1)}
+
+    /* THEME TOGGLE */
+    .thbtn{
+      position:fixed;bottom:20px;right:16px;
+      width:46px;height:46px;border-radius:50%;
+      background:linear-gradient(135deg,var(--c1),var(--c4));
+      border:none;color:#fff;font-size:18px;
+      cursor:pointer;
+      box-shadow:0 4px 18px rgba(14,165,233,.4);
+      z-index:200;display:flex;align-items:center;justify-content:center;
+      transition:.2s;
+    }
+    .thbtn:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(14,165,233,.5)}
+    .thbtn:active{transform:scale(.95)}
+
+    /* TABLET+ */
+    @media(min-width:600px){
+      .hdr h1{font-size:24px}
+      .ctrl{top:130px}
+      .main{flex-direction:row;align-items:flex-start}
+      .main .card{flex:1}
+      .item{gap:16px}
+    }
+    @media(min-width:800px){
+      .hdr{padding:22px 24px 16px}
+      .stats{padding:14px 24px;gap:10px}
+      .ctrl{padding:14px 24px}
+      .main{padding:18px 24px 32px}
+      .stat-n{font-size:26px}
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <header class="hdr">
+    <div class="hdr-badge">REDE ÓPTICA · 2026</div>
+    <h1>Bairros de Elias Fausto</h1>
+    <p>GPON × EPON · Mapeamento Ativo</p>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><div class="stat-n c-blue" id="s-total">0</div><div class="stat-l">Total</div></div>
+    <div class="stat"><div class="stat-n c-green" id="s-gpon">0</div><div class="stat-l">GPON</div></div>
+    <div class="stat"><div class="stat-n c-amber" id="s-epon">0</div><div class="stat-l">EPON</div></div>
+    <div class="stat"><div class="stat-n c-red" id="s-crit">0</div><div class="stat-l">Críticos</div></div>
+  </section>
+
+  <section class="ctrl">
+    <div class="srch">
+      <span class="srch-ic">⌕</span>
+      <input id="srch" type="text" placeholder="Buscar bairro..." oninput="render()">
+    </div>
+    <div class="fbrow">
+      <button class="fb on-all" id="fb-all" onclick="setF('all')">Todos</button>
+      <button class="fb" id="fb-gpon" onclick="setF('GPON')">
+        <span class="fb-dot" style="background:#22c55e"></span>GPON
+      </button>
+      <button class="fb" id="fb-epon" onclick="setF('EPON')">
+        <span class="fb-dot" style="background:#f59e0b"></span>EPON
+      </button>
+      <button class="fb" id="fb-crit" onclick="setF('crit')">
+        <span class="fb-dot" style="background:#ef4444"></span>Críticos
+      </button>
+    </div>
+  </section>
+
+  <main class="main">
+    <div class="card" id="card-g">
+      <div class="chdr chdr-gpon">
+        <div class="chdr-ico">🟢</div>
+        <div class="chdr-info">
+          <div class="chdr-title">GPON</div>
+          <div class="chdr-sub">Gigabit Passive Optical Network</div>
+        </div>
+        <span class="chdr-cnt" id="cnt-g">0</span>
+      </div>
+      <div id="list-g"></div>
+    </div>
+
+    <div class="card" id="card-e">
+      <div class="chdr chdr-epon">
+        <div class="chdr-ico">🟠</div>
+        <div class="chdr-info">
+          <div class="chdr-title">EPON</div>
+          <div class="chdr-sub">Ethernet Passive Optical Network</div>
+        </div>
+        <span class="chdr-cnt" id="cnt-e">0</span>
+      </div>
+      <div id="list-e"></div>
+    </div>
+  </main>
+
+  <footer>
+    Total: <strong id="ft-total">0</strong> &nbsp;·&nbsp;
+    GPON: <strong id="ft-gpon">0</strong> &nbsp;·&nbsp;
+    EPON: <strong id="ft-epon">0</strong> &nbsp;·&nbsp;
+    Críticos: <strong id="ft-crit">0</strong>
+  </footer>
+
+  <button class="thbtn" id="thbtn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+
+  <script>
+    const bairros = [
+      { nome: "Saltinho", tipo: "EPON" },
+      { nome: "Centro", tipo: "EPON", critico: true },
+      { nome: "Carima", tipo: "EPON", critico: true },
+      { nome: "Vila Camatari", tipo: "GPON", info: "2 CTO EPON" },
+      { nome: "São Pedro", tipo: "GPON", info: "2 CTO EPON" },
+      { nome: "Bandeirantes", tipo: "EPON" },
+      { nome: "Jardim Palmeiras", tipo: "EPON" },
+      { nome: "Mario Covas", tipo: "EPON" },
+      { nome: "Nova Elias Fausto", tipo: "EPON" },
+      { nome: "São José", tipo: "GPON" },
+      { nome: "São Judas I", tipo: "EPON" },
+      { nome: "Residencial Tornatore", tipo: "EPON" },
+      { nome: "Vila Alvorada", tipo: "EPON" },
+      { nome: "Vila Anchieta", tipo: "EPON" },
+      { nome: "Distrito Industrial Luiz Carlos de Almeida", tipo: "GPON" },
+      { nome: "Parque Balneário Carimã", tipo: "EPON", critico: true },
+      { nome: "Jardim São Pedro", tipo: "GPON" },
+      { nome: "Chácaras de Recreio Bela Vista", tipo: "GPON" },
+      { nome: "Conjunto Habitacional São Judas Tadeu 2", tipo: "GPON" },
+      { nome: "Conjunto Habitacional Henrique Pires de Toledo 1", tipo: "GPON", info: "São Judas" },
+      { nome: "Conjunto Habitacional Henrique Pires de Toledo 2", tipo: "GPON", info: "São Judas" },
+      { nome: "Jardim São José Elias", tipo: "GPON" },
+      { nome: "Jardim Mário Covas", tipo: "EPON" },
+      { nome: "Área Industrial Vila Camatari", tipo: "GPON", info: "2 CTOs EPON" },
+      { nome: "Conjunto Habitacional Prefeito Laércio Betarelli", tipo: "EPON" },
+      { nome: "Jardim Nova Elias Fausto", tipo: "EPON" },
+      { nome: "Jardim Bandeirantes Elias Fausto", tipo: "EPON" }
+    ];
+
+    let filtroAtivo = 'all';
+
+    function setF(f) {
+      filtroAtivo = f;
+      document.querySelectorAll('.fb').forEach(b => b.className = 'fb');
+      const map = { all: 'on-all', GPON: 'on-gpon', EPON: 'on-epon', crit: 'on-crit' };
+      const id = f === 'GPON' ? 'gpon' : f === 'EPON' ? 'epon' : f === 'crit' ? 'crit' : 'all';
+      document.getElementById('fb-' + id).className = 'fb ' + map[f];
+      render();
+    }
+
+    function render() {
+      const q = document.getElementById('srch').value.toLowerCase();
+      let lista = bairros.filter(b => {
+        if (q && !b.nome.toLowerCase().includes(q)) return false;
+        if (filtroAtivo === 'GPON') return b.tipo === 'GPON';
+        if (filtroAtivo === 'EPON') return b.tipo === 'EPON';
+        if (filtroAtivo === 'crit') return b.critico;
+        return true;
+      });
+
+      const gList = lista.filter(b => b.tipo === 'GPON');
+      const eList = lista.filter(b => b.tipo === 'EPON');
+      const crit = lista.filter(b => b.critico);
+
+      ['total','gpon','epon','crit'].forEach(id => {
+        const vals = { total: lista.length, gpon: gList.length, epon: eList.length, crit: crit.length };
+        document.getElementById('s-' + id).textContent = vals[id];
+        document.getElementById('ft-' + id).textContent = vals[id];
+      });
+      document.getElementById('cnt-g').textContent = gList.length;
+      document.getElementById('cnt-e').textContent = eList.length;
+
+      function mkItem(b, idx) {
+        const d = document.createElement('div');
+        const isCrit = b.critico;
+        const dotCls = isCrit ? 'dc' : b.tipo === 'GPON' ? 'dg' : 'de';
+        const bdgCls = isCrit ? 'bc' : b.tipo === 'GPON' ? 'bg' : 'be';
+        const bdgTxt = isCrit ? '⚠ CRÍTICO' : b.tipo;
+
+        d.className = 'item' + (isCrit ? ' crit' : '');
+        d.style.animationDelay = (idx * 30) + 'ms';
+
+        const query = encodeURIComponent(b.nome + ", Elias Fausto, SP");
+
+        d.innerHTML = `
+          <div class="idot ${dotCls}"></div>
+          <div class="iinfo">
+            <div class="item-name">${b.nome}</div>
+            ${b.info ? `<div class="item-sub">${b.info}</div>` : ''}
+          </div>
+          <span class="badge ${bdgCls}">${bdgTxt}</span>
+          <a href="https://www.google.com/maps/search/?api=1&query=${query}" 
+             target="_blank" 
+             class="btn-maps"
+             title="Abrir no Google Maps">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314-11.314z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Maps
+          </a>`;
+
+        return d;
+      }
+
+      const lg = document.getElementById('list-g');
+      const le = document.getElementById('list-e');
+      lg.innerHTML = ''; 
+      le.innerHTML = '';
+
+      if (!gList.length) lg.innerHTML = '<div class="empty">sem resultados</div>';
+      else gList.forEach((b, i) => lg.appendChild(mkItem(b, i)));
+
+      if (!eList.length) le.innerHTML = '<div class="empty">sem resultados</div>';
+      else eList.forEach((b, i) => le.appendChild(mkItem(b, i)));
+
+      const cg = document.getElementById('card-g');
+      const ce = document.getElementById('card-e');
+      if (filtroAtivo === 'EPON') { 
+        cg.style.display = 'none'; 
+        ce.style.display = ''; 
+      }
+      else if (filtroAtivo === 'GPON') { 
+        ce.style.display = 'none'; 
+        cg.style.display = ''; 
+      }
+      else { 
+        cg.style.display = ''; 
+        ce.style.display = ''; 
+      }
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      document.getElementById('thbtn').textContent = isDark ? '🌙' : '☀️';
+    }
+
+    // Render inicial
+    render();
+  </script>
+</body>
+</html>
