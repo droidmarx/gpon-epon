@@ -374,7 +374,6 @@
       const { lat, lng } = e.latlng;
       const coordStr = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
       
-      // Atualiza painel visual
       const panel = document.getElementById('coord-panel');
       const text = document.getElementById('coord-text');
       panel.style.display = 'flex';
@@ -382,6 +381,32 @@
 
       if (userMarker) map.removeLayer(userMarker);
       userMarker = L.circleMarker(e.latlng, { radius: 12, fillColor: '#3b82f6', color: '#fff', weight: 3, fillOpacity: 0.8 }).addTo(map);
+    }
+
+    function highlightBairro(nome) {
+      const marker = markers[nome];
+      if (!marker || !map) return;
+
+      // Zoom suave no bairro
+      map.flyTo(marker.getLatLng(), 16, {
+        duration: 1.5,
+        easeLinearity: 0.25
+      });
+
+      // Efeito visual de pulsação no marcador
+      let count = 0;
+      const interval = setInterval(() => {
+        count++;
+        if (count % 2 === 0) {
+          marker.setStyle({ radius: 14, fillOpacity: 0.4 });
+        } else {
+          marker.setStyle({ radius: 8, fillOpacity: 0.95 });
+        }
+        if (count >= 6) {
+          clearInterval(interval);
+          marker.setStyle({ radius: 8, fillOpacity: 0.95 });
+        }
+      }, 300);
     }
 
     function copyCoords() {
@@ -422,6 +447,12 @@
       const le = document.getElementById('list-e'); le.innerHTML = '';
       eList.forEach((b, i) => le.appendChild(mkItem(b, i)));
 
+      const cg = document.getElementById('card-g');
+      const ce = document.getElementById('card-e');
+      if (filtroAtivo === 'EPON') { cg.style.display = 'none'; ce.style.display = ''; }
+      else if (filtroAtivo === 'GPON') { ce.style.display = 'none'; cg.style.display = ''; }
+      else { cg.style.display = ''; ce.style.display = ''; }
+
       if (!mapInitialized) {
         initMap();
         mapInitialized = true;
@@ -446,6 +477,10 @@
         </div>
         <span class="badge ${bdgCls}">${bdgTxt}</span>
         <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.nome + ', Elias Fausto')}" target="_blank" class="btn-maps">Maps</a>`;
+      
+      // Adiciona o evento de clique para zoom no mapa
+      d.querySelector('.iinfo').addEventListener('click', () => highlightBairro(b.nome));
+      
       return d;
     }
 
